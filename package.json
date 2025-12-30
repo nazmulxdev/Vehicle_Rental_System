@@ -1,0 +1,23 @@
+{
+  "name": "level-2-a2",
+  "version": "1.0.0",
+  "description": "This is an assignment project.",
+  "license": "ISC",
+  "author": "Md Nazmul Hossen",
+  "type": "module",
+  "main": "./src/server.ts",
+  "scripts": {
+    "dev": "npx tsx watch ./src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/pg": "^8.16.0",
+    "typescript": "^5.9.3"
+  }
+}
