@@ -69,6 +69,59 @@ const createVehicle = async (req: Request, res: Response) => {
   }
 };
 
+const getAllVehicles = async (req: Request, res: Response) => {
+  try {
+    const result = await vehiclesServices.getAllVehicles();
+    if (result.rows.length === 0) {
+      return sendResponse(res, {
+        success: true,
+        message: "No vehicles found.",
+        statusCode: 200,
+      });
+    } else {
+      return sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Vehicles retrieved successfully.",
+        data: result.rows,
+      });
+    }
+  } catch (error: any) {
+    sendResponse(res, {
+      statusCode: error.statusCode || 500,
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const getVehiclesById = async (req: Request, res: Response) => {
+  const { vehicleId } = req.params;
+  try {
+    if (!vehicleId) {
+      throw new errorHandler(400, "Please give vehicle id.");
+    }
+    const result = await vehiclesServices.getVehicleById(vehicleId);
+    if (result.rows.length === 0) {
+      throw new errorHandler(404, "No vehicle listed using this id.");
+    }
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Vehicle retrieved successfully.",
+      data: result.rows[0],
+    });
+  } catch (error: any) {
+    sendResponse(res, {
+      statusCode: error.statusCode || 500,
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const vehiclesController = {
   createVehicle,
+  getAllVehicles,
+  getVehiclesById,
 };
