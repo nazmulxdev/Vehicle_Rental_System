@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import sendResponse from "../../utils/sendResponse.js";
-import bcrypt from "bcryptjs";
 import { authServices } from "./auth.service.js";
 import errorHandler from "../../utils/errorHandler.js";
 
@@ -41,7 +40,11 @@ const signupUser = async (req: Request, res: Response) => {
       data: result.rows[0],
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    sendResponse(res, {
+      statusCode: error.statusCode || 500,
+      success: false,
+      message: error.message,
+    });
   }
 };
 

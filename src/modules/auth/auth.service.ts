@@ -19,6 +19,19 @@ interface ISignin {
 
 const createUser = async (payload: ISignup) => {
   const { name, email, phone, password, role } = payload;
+  const checkUser = await pool.query(
+    `
+    SELECT * FROM users WHERE email=$1
+    `,
+    [email],
+  );
+
+  if (checkUser.rows.length > 0) {
+    throw new errorHandler(400, "User already exist in database.");
+  }
+  if (role !== "admin" && role !== "customer") {
+    throw new errorHandler(400, "Role must be either admin or customer.");
+  }
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
   const result = await pool.query(
