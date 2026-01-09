@@ -1,0 +1,96 @@
+import { pool } from "../../config/db.config.js";
+import errorHandler from "../../utils/errorHandler.js";
+
+interface IBooking {
+  customer_id: number;
+  vehicle_id: number;
+  rent_start_date: string;
+  rent_end_date: string;
+  total_rented_day: number;
+}
+
+const createBooking = async (payload: IBooking) => {
+  const {
+    customer_id,
+    vehicle_id,
+    rent_start_date,
+    rent_end_date,
+    total_rented_day,
+  } = payload;
+
+  const checkUser = await pool.query(
+    `
+    SELECT * FROM Users WHERE id=$1
+    `,
+    [customer_id],
+  );
+
+  if (checkUser.rowCount === 0) {
+    throw new errorHandler(404, "Customer is not registered in this id.");
+  }
+
+  const checkVehicleStatus = await pool.query(
+    `
+    SELECT * FROM Vehicles WHERE id=$1
+    `,
+    [vehicle_id],
+  );
+
+  console.log(checkVehicleStatus);
+
+  if (checkVehicleStatus.rowCount === 0) {
+    throw new errorHandler(404, "No vehicle found.");
+  }
+
+  const {
+    vehicle_name,
+    daily_rent_price,
+    registration_number,
+    availability_status,
+  } = checkVehicleStatus.rows[0];
+
+  if (availability_status === "booked") {
+    throw new errorHandler(409, "The vehicle is already booked.");
+  }
+
+  const totalPrice = total_rented_day * daily_rent_price;
+
+  const bookingVehicle = await pool.query(
+    `
+    INSERT INTO Bookings(customer_id,vehicle_id,rent_start_date,rent_end_date,total_price,status) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *
+    `,
+    [
+      customer_id,
+      vehicle_id,
+      rent_start_date,
+      rent_end_date,
+      totalPrice,
+      "active",
+    ],
+  );
+
+  const updateVehicleStatus = await pool.query(
+    `
+    UPDATE Vehicles SET availability_status=$1 WHERE id=$2
+    `,
+    ["booked", vehicle_id],
+  );
+
+  if (updateVehicleStatus.rowCount === 0) {
+    throw new errorHandler(500, "Failed to update vehicle status.");
+  }
+  return {
+    ...bookingVehicle.rows[0],
+    rent_start_date: bookingVehicle.rows[0].rent_start_date
+      .toISOString()
+      .split("T")[0],
+    rent_end_date: bookingVehicle.rows[0].rent_end_date
+      .toISOString()
+      .split("T")[0],
+    vehicle: { vehicle_name, registration_number, daily_rent_price },
+  };
+};
+
+export const bookingsServices = {
+  createBooking,
+};

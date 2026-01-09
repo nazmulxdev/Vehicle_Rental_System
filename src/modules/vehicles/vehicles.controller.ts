@@ -120,6 +120,21 @@ const getVehiclesById = async (req: Request, res: Response) => {
   }
 };
 
+const deleteVehicle = async (req: Request, res: Response) => {
+  const { vehicleId } = req.params;
+  try {
+    if (!vehicleId) {
+      throw new errorHandler(400, "Please give vehicle id.");
+    }
+  } catch (error: any) {
+    sendResponse(res, {
+      statusCode: error.statusCode || 500,
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const vehiclesController = {
   createVehicle,
   getAllVehicles,

@@ -14,9 +14,7 @@ const dbInit = async () => {
         email TEXT NOT NULL UNIQUE CHECK (email=LOWER(email)),
         password VARCHAR (250) NOT NULL CHECK (LENGTH(password)>=6),
         phone VARCHAR (15) NOT NULL,
-        role VARCHAR (100) NOT NULL CHECK (role IN ('admin','customer')),
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
+        role VARCHAR (100) NOT NULL CHECK (role IN ('admin','customer'))
         )
         `,
   );
