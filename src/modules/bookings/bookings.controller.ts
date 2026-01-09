@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import sendResponse from "../../utils/sendResponse.js";
 import errorHandler from "../../utils/errorHandler.js";
 import { bookingsServices } from "./bookings.service.js";
+import { JwtPayload } from "jsonwebtoken";
 
 const createBooking = async (req: Request, res: Response) => {
   const { customer_id, vehicle_id, rent_start_date, rent_end_date } = req.body;
@@ -51,6 +52,84 @@ const createBooking = async (req: Request, res: Response) => {
   }
 };
 
+const getBookingsByRole = async (req: Request, res: Response) => {
+  const authUser = req.user as JwtPayload;
+
+  try {
+    if (authUser.role === "admin") {
+      const result = await bookingsServices.getBookingsByRole(
+        authUser.id,
+        authUser.role,
+      );
+
+      const formattedResponse = result?.map((b) => ({
+        id: b.id,
+        customer_id: b.customer_id,
+        vehicle_id: b.vehicle_id,
+        rent_start_date: b.rent_start_date.toISOString().split("T")[0],
+        rent_end_date: b.rent_end_date.toISOString().split("T")[0],
+        total_price: b.total_price,
+        status: b.status,
+        customer: {
+          name: b.customer_name,
+          email: b.customer_email,
+          phone: b.phone,
+        },
+        vehicle: {
+          vehicle_name: b.vehicle_name,
+          registration_number: b.registration_number,
+          daily_rent_price: b.daily_rent_price,
+        },
+      }));
+
+      console.log(formattedResponse);
+
+      return sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Booking retrieves successfully.",
+        data: formattedResponse,
+      });
+    }
+
+    if (authUser.role === "customer") {
+      const result = await bookingsServices.getBookingsByRole(
+        authUser.id,
+        authUser.role,
+      );
+
+      const formattedResponse = result?.map((b) => ({
+        id: b.id,
+        vehicle_id: b.vehicle_id,
+        rent_start_date: b.rent_start_date.toISOString().split("T")[0],
+        rent_end_date: b.rent_end_date.toISOString().split("T")[0],
+        total_price: b.total_price,
+        status: b.status,
+        vehicle: {
+          vehicle_name: b.vehicle_name,
+          registration_number: b.registration_number,
+          type: b.type,
+          daily_rent_price: b.daily_rent_price,
+        },
+      }));
+
+      return sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Your bookings retrieved successfully.",
+        data: formattedResponse,
+      });
+    }
+  } catch (error: any) {
+    sendResponse(res, {
+      statusCode: error.statusCode || 500,
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const bookingsController = {
   createBooking,
+  getBookingsByRole,
 };
