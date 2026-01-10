@@ -27,7 +27,7 @@ const createVehicle = async (payload: IVehicle) => {
   } = payload;
   const checkRegistration = await pool.query(
     `
-        SELECT * FROM Vehicles WHERE registration_number=$1
+        SELECT * FROM vehicles WHERE registration_number=$1
         `,
     [registration_number],
   );
@@ -41,7 +41,7 @@ const createVehicle = async (payload: IVehicle) => {
 
   const result = await pool.query(
     `
-    INSERT INTO Vehicles(vehicle_name,type,registration_number,daily_rent_price,availability_status) VALUES ($1,$2,$3,$4,$5) RETURNING *
+    INSERT INTO vehicles(vehicle_name,type,registration_number,daily_rent_price,availability_status) VALUES ($1,$2,$3,$4,$5) RETURNING *
     `,
     [
       vehicle_name,
@@ -57,7 +57,7 @@ const createVehicle = async (payload: IVehicle) => {
 const getAllVehicles = async () => {
   const result = await pool.query(
     `
-    SELECT * FROM Vehicles 
+    SELECT * FROM vehicles 
         `,
   );
 
@@ -67,7 +67,7 @@ const getAllVehicles = async () => {
 const getVehicleById = async (vehicleId: string) => {
   const result = await pool.query(
     `
-        SELECT * FROM Vehicles WHERE id=$1
+        SELECT * FROM vehicles WHERE id=$1
         `,
     [vehicleId],
   );
@@ -89,7 +89,7 @@ const updateVehicle = async (
 
   const checkVehicle = await pool.query(
     `
-    SELECT id FROM Vehicles WHERE id=$1
+    SELECT id FROM vehicles WHERE id=$1
     `,
     [vehicleId],
   );
@@ -123,7 +123,7 @@ const updateVehicle = async (
   if (payload.registration_number) {
     const checkRegistration = await pool.query(
       `
-      SELECT id FROM Vehicles WHERE registration_number=$1 AND id!=$2
+      SELECT id FROM vehicles WHERE registration_number=$1 AND id!=$2
       `,
       [payload.registration_number, vehicleId],
     );
@@ -144,7 +144,7 @@ const updateVehicle = async (
   const setValues = Object.values(payload);
   const result = await pool.query(
     `
-    UPDATE Vehicles SET ${setKeys} WHERE id =$${
+    UPDATE vehicles SET ${setKeys} WHERE id =$${
       setValues.length + 1
     } RETURNING *
     `,
@@ -157,7 +157,7 @@ const updateVehicle = async (
 const deleteVehicle = async (vehicleId: string) => {
   const checkVehicleExist = await pool.query(
     `
-    SELECT id FROM Vehicles WHERE id=$1
+    SELECT id FROM vehicles WHERE id=$1
     `,
     [vehicleId],
   );
@@ -167,7 +167,7 @@ const deleteVehicle = async (vehicleId: string) => {
   }
   const checkActiveBooking = await pool.query(
     `
-    SELECT id FROM Bookings WHERE vehicle_id=$1 AND status=$2
+    SELECT id FROM bookings WHERE vehicle_id=$1 AND status=$2
     `,
     [vehicleId, "active"],
   );
@@ -178,7 +178,7 @@ const deleteVehicle = async (vehicleId: string) => {
 
   const deleteVehicle = await pool.query(
     `
-    DELETE FROM Vehicles WHERE id=$1
+    DELETE FROM vehicles WHERE id=$1
     `,
     [vehicleId],
   );

@@ -20,7 +20,7 @@ const createBooking = async (payload: IBooking) => {
 
   const checkUser = await pool.query(
     `
-    SELECT * FROM Users WHERE id=$1
+    SELECT * FROM users WHERE id=$1
     `,
     [customer_id],
   );
@@ -31,7 +31,7 @@ const createBooking = async (payload: IBooking) => {
 
   const checkVehicleStatus = await pool.query(
     `
-    SELECT * FROM Vehicles WHERE id=$1
+    SELECT * FROM vehicles WHERE id=$1
     `,
     [vehicle_id],
   );
@@ -55,7 +55,7 @@ const createBooking = async (payload: IBooking) => {
 
   const bookingVehicle = await pool.query(
     `
-    INSERT INTO Bookings(customer_id,vehicle_id,rent_start_date,rent_end_date,total_price,status) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *
+    INSERT INTO bookings(customer_id,vehicle_id,rent_start_date,rent_end_date,total_price,status) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *
     `,
     [
       customer_id,
@@ -69,7 +69,7 @@ const createBooking = async (payload: IBooking) => {
 
   const updateVehicleStatus = await pool.query(
     `
-    UPDATE Vehicles SET availability_status=$1 WHERE id=$2
+    UPDATE vehicles SET availability_status=$1 WHERE id=$2
     `,
     ["booked", vehicle_id],
   );
@@ -130,8 +130,8 @@ const getBookingsByRole = async (userId: string, role: string) => {
       v.registration_number,
       v.type,
       v.daily_rent_price
-      FROM Bookings b 
-      JOIN Vehicles v ON b.vehicle_id=v.id
+      FROM bookings b 
+      JOIN vehicles v ON b.vehicle_id=v.id
       WHERE b.customer_id=$1
       ORDER BY b.id DESC
       `,
@@ -145,7 +145,7 @@ const autoReturnedBookings = async () => {
   const today = new Date();
   const expiredBookings = await pool.query(
     `
-    SELECT id,vehicle_id FROM Bookings WHERE status=$1 AND rent_end_date<$2
+    SELECT id,vehicle_id FROM bookings WHERE status=$1 AND rent_end_date<$2
     `,
     ["active", today],
   );
@@ -156,14 +156,14 @@ const autoReturnedBookings = async () => {
 
   await pool.query(
     `
-    UPDATE Bookings SET status=$1 WHERE id=ANY($2::int[])
+    UPDATE bookings SET status=$1 WHERE id=ANY($2::int[])
     `,
     ["returned", bookingIds],
   );
 
   await pool.query(
     `
-    UPDATE Vehicles SET availability_status =$1 WHERE id=ANY($2::int[])
+    UPDATE vehicles SET availability_status =$1 WHERE id=ANY($2::int[])
     `,
     ["available", vehicleIds],
   );
@@ -177,7 +177,7 @@ const updateBooking = async (
 ) => {
   const getBookingDetails = await pool.query(
     `
-      SELECT * FROM Bookings WHERE id=$1
+      SELECT * FROM bookings WHERE id=$1
       `,
     [bookingId],
   );
@@ -199,13 +199,13 @@ const updateBooking = async (
     }
     const updateBookingStatus = await pool.query(
       `
-      UPDATE Bookings SET status=$1 WHERE id=$2 RETURNING *
+      UPDATE bookings SET status=$1 WHERE id=$2 RETURNING *
       `,
       [reqStatus, bookingId],
     );
     const updateVehicleAvailability = await pool.query(
       `
-      UPDATE Vehicles SET availability_status=$1 WHERE id=$2 RETURNING availability_status
+      UPDATE vehicles SET availability_status=$1 WHERE id=$2 RETURNING availability_status
       
       `,
       ["available", vehicle_id],
@@ -251,14 +251,14 @@ const updateBooking = async (
 
     const result = await pool.query(
       `
-      UPDATE Bookings SET status=$1 WHERE id=$2 RETURNING *
+      UPDATE bookings SET status=$1 WHERE id=$2 RETURNING *
       `,
       [reqStatus, bookingId],
     );
 
     const updateVehicleAvailability = await pool.query(
       `
-      UPDATE Vehicles SET availability_status=$1 WHERE id=$2 RETURNING availability_status
+      UPDATE vehicles SET availability_status=$1 WHERE id=$2 RETURNING availability_status
       
       `,
       ["available", vehicle_id],

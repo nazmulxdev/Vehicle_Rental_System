@@ -28,7 +28,7 @@ const checkOwnerShip = async (
 
   const check = await pool.query(
     `
-    SELECT id FROM Users WHERE id=$1 AND email=$2
+    SELECT id FROM users WHERE id=$1 AND email=$2
     `,
     [userId, email],
   );
@@ -49,7 +49,7 @@ const updateUser = async (userId: string | undefined, payload: IUser) => {
 
   const checkUser = await pool.query(
     `
-    SELECT id FROM Users WHERE id=$1
+    SELECT id FROM users WHERE id=$1
     `,
     [userId],
   );
@@ -61,7 +61,7 @@ const updateUser = async (userId: string | undefined, payload: IUser) => {
   if (payload.email) {
     const checkUniqueEmail = await pool.query(
       `
-      SELECT id FROM Users WHERE email=$1 AND id!=$2
+      SELECT id FROM users WHERE email=$1 AND id!=$2
       `,
       [payload.email, userId],
     );
@@ -94,7 +94,7 @@ const updateUser = async (userId: string | undefined, payload: IUser) => {
 
   const result = await pool.query(
     `
-        UPDATE Users SET ${queryKeys} WHERE id=$${
+        UPDATE users SET ${queryKeys} WHERE id=$${
       updateDetailsValues.length + 1
     } RETURNING *
         `,
@@ -107,7 +107,7 @@ const updateUser = async (userId: string | undefined, payload: IUser) => {
 const deleteUser = async (userId: string | undefined) => {
   const checkUser = await pool.query(
     `
-    SELECT id FROM Users WHERE id=$1
+    SELECT id FROM users WHERE id=$1
     `,
     [userId],
   );
@@ -118,7 +118,7 @@ const deleteUser = async (userId: string | undefined) => {
 
   const checkUserBookings = await pool.query(
     `
-    SELECT * FROM Bookings WHERE customer_id=$1 AND status=$2
+    SELECT * FROM bookings WHERE customer_id=$1 AND status=$2
     `,
     [userId, "active"],
   );

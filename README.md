@@ -122,10 +122,10 @@ src/
 2.  JWT token generated
 3.  Token sent via header:
 
-    ```
-        Authorization: Bearer <token>
+```
+    Authorization: Bearer <token>
 
-    ```
+```
 
 4.  Middleware validates token & role
 
