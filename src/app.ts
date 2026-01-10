@@ -23,11 +23,14 @@ app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/vehicles", vehiclesRoutes);
 
 // bookings routes
-
 app.use("/api/v1/bookings", bookingsRoutes);
 
-// not found route
+// root routes
+app.get("/", (req: Request, res: Response) => {
+  res.send("This is the assignment server.");
+});
 
+// not found route
 app.use((req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: 404,
@@ -35,10 +38,6 @@ app.use((req: Request, res: Response) => {
     message: "Route not found.",
     path: req.path,
   });
-});
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("This is the assignment server.");
 });
 
 export default app;
