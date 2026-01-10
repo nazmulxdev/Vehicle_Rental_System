@@ -143,7 +143,110 @@ const getBookingsByRole = async (userId: string, role: string) => {
     return result.rows;
   }
 };
+
+const updateBooking = async (
+  userId: string,
+  bookingId: string | undefined,
+  role: string,
+  reqStatus: string,
+) => {
+  const getBookingDetails = await pool.query(
+    `
+      SELECT * FROM Bookings WHERE id=$1
+      `,
+    [bookingId],
+  );
+
+  if (getBookingDetails.rowCount === 0) {
+    throw new errorHandler(404, "Booking not found.");
+  }
+
+  const { vehicle_id, status, customer_id, rent_start_date } =
+    getBookingDetails.rows[0];
+
+  if (role === "admin") {
+    if (reqStatus !== "returned") {
+      throw new errorHandler(400, "Please give valid status.");
+    }
+
+    if (status === "returned") {
+      throw new errorHandler(400, "Booking is already returned.");
+    }
+    const updateBookingStatus = await pool.query(
+      `
+      UPDATE Bookings SET status=$1 WHERE id=$2 RETURNING *
+      `,
+      [reqStatus, bookingId],
+    );
+    const updateVehicleAvailability = await pool.query(
+      `
+      UPDATE Vehicles SET availability_status=$1 WHERE id=$2 RETURNING availability_status
+      
+      `,
+      ["available", vehicle_id],
+    );
+
+    console.log(updateBookingStatus.rows[0]);
+    console.log(updateVehicleAvailability.rows[0]);
+
+    return {
+      ...updateBookingStatus.rows[0],
+      rent_start_date: updateBookingStatus.rows[0].rent_start_date
+        .toISOString()
+        .split("T")[0],
+      rent_end_date: updateBookingStatus.rows[0].rent_end_date
+        .toISOString()
+        .split("T")[0],
+
+      vehicle: updateVehicleAvailability.rows[0],
+    };
+  }
+  if (role === "customer") {
+    if (userId !== customer_id) {
+      throw new errorHandler(403, "Unauthorized request.");
+    }
+
+    if (reqStatus !== "cancelled") {
+      throw new errorHandler(
+        400,
+        "You can only cancelled the booking. Please give valid status.",
+      );
+    }
+
+    if (status === "cancelled") {
+      throw new errorHandler(400, "Booking is already cancelled.");
+    }
+
+    const today = new Date();
+    const bookingStartDate = new Date(rent_start_date);
+
+    if (today >= bookingStartDate) {
+      throw new errorHandler(
+        400,
+        "Booking can not be cancelled after start date.",
+      );
+    }
+
+    const result = await pool.query(
+      `
+      UPDATE Bookings SET status=$1 WHERE id=$2 RETURNING *
+      `,
+      [reqStatus, bookingId],
+    );
+
+    console.log(result);
+
+    return {
+      ...result.rows[0],
+      rent_start_date: result.rows[0].rent_start_date
+        .toISOString()
+        .split("T")[0],
+      rent_end_date: result.rows[0].rent_end_date.toISOString().split("T")[0],
+    };
+  }
+};
 export const bookingsServices = {
   createBooking,
   getBookingsByRole,
+  updateBooking,
 };

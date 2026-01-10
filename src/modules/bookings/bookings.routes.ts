@@ -12,4 +12,10 @@ router.get(
   bookingsController.getBookingsByRole,
 );
 
+router.put(
+  "/:bookingId",
+  auth("admin", "customer"),
+  bookingsController.updateBookingStatus,
+);
+
 export const bookingsRoutes = router;

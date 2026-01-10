@@ -129,7 +129,55 @@ const getBookingsByRole = async (req: Request, res: Response) => {
   }
 };
 
+const updateBookingStatus = async (req: Request, res: Response) => {
+  const { bookingId } = req.params;
+  const { status } = req.body;
+  const { id, role } = req.user as JwtPayload;
+  try {
+    if (role === "admin") {
+      const result = await bookingsServices.updateBooking(
+        id,
+        bookingId,
+        role,
+        status,
+      );
+
+      console.log(result);
+      return sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Booking marked as returned. Vehicle is now available.",
+        data: result,
+      });
+    }
+
+    if (role === "customer") {
+      const result = await bookingsServices.updateBooking(
+        id,
+        bookingId,
+        role,
+        status,
+      );
+
+      console.log(result);
+      return sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Booking cancelled successfully.",
+        data: result,
+      });
+    }
+  } catch (error: any) {
+    sendResponse(res, {
+      statusCode: error.statusCode || 500,
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const bookingsController = {
   createBooking,
   getBookingsByRole,
+  updateBookingStatus,
 };

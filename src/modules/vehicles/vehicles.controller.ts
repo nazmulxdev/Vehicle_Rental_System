@@ -120,12 +120,46 @@ const getVehiclesById = async (req: Request, res: Response) => {
   }
 };
 
+const updateVehicle = async (req: Request, res: Response) => {
+  const updateDate = req.body;
+  const { vehicleId } = req.params;
+  try {
+    const result = await vehiclesServices.updateVehicle(vehicleId, updateDate);
+    console.log(result);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Vehicle updated successfully.",
+      data: result,
+    });
+  } catch (error: any) {
+    sendResponse(res, {
+      statusCode: error.statusCode || 500,
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 const deleteVehicle = async (req: Request, res: Response) => {
   const { vehicleId } = req.params;
   try {
     if (!vehicleId) {
       throw new errorHandler(400, "Please give vehicle id.");
     }
+
+    const result = await vehiclesServices.deleteVehicle(vehicleId);
+
+    if (result.rowCount === 0) {
+      throw new errorHandler(404, "Unable to delete this vehicle.");
+    }
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Vehicle deleted successfully.",
+    });
   } catch (error: any) {
     sendResponse(res, {
       statusCode: error.statusCode || 500,
@@ -139,4 +173,6 @@ export const vehiclesController = {
   createVehicle,
   getAllVehicles,
   getVehiclesById,
+  updateVehicle,
+  deleteVehicle,
 };
