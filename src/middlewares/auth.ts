@@ -20,8 +20,6 @@ const auth = (...roles: Array<string>) => {
         config.jwt_secret as string,
       ) as JwtPayload;
 
-      console.log(decoded);
-
       if (!decoded) {
         throw new errorHandler(401, "Invalid authentication token.");
       }

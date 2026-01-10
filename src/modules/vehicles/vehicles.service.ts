@@ -123,9 +123,9 @@ const updateVehicle = async (
   if (payload.registration_number) {
     const checkRegistration = await pool.query(
       `
-      SELECT id FROM Vehicles WHERE registration_number=$1 
+      SELECT id FROM Vehicles WHERE registration_number=$1 AND id!=$2
       `,
-      [payload.registration_number],
+      [payload.registration_number, vehicleId],
     );
 
     if (checkRegistration.rowCount !== 0) {

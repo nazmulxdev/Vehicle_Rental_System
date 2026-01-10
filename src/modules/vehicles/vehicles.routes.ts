@@ -4,7 +4,7 @@ import auth from "../../middlewares/auth.js";
 
 const router = Router();
 
-router.post("/", vehiclesController.createVehicle);
+router.post("/", auth("admin"), vehiclesController.createVehicle);
 router.get("/", vehiclesController.getAllVehicles);
 router.get("/:vehicleId", vehiclesController.getVehiclesById);
 

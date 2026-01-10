@@ -125,7 +125,6 @@ const updateVehicle = async (req: Request, res: Response) => {
   const { vehicleId } = req.params;
   try {
     const result = await vehiclesServices.updateVehicle(vehicleId, updateDate);
-    console.log(result);
 
     sendResponse(res, {
       success: true,

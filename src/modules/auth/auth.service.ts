@@ -9,7 +9,7 @@ interface ISignup {
   email: string;
   phone: string;
   password: string;
-  role: string;
+  role: "admin" | "customer";
 }
 
 interface ISignin {
@@ -74,8 +74,6 @@ const signinUser = async (payload: ISignin) => {
   const token = jwt.sign(loggedUser, config.jwt_secret as string, {
     expiresIn: "7d",
   });
-
-  console.log(token);
 
   return { token, loggedUser };
 };

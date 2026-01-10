@@ -36,8 +36,6 @@ const createBooking = async (payload: IBooking) => {
     [vehicle_id],
   );
 
-  console.log(checkVehicleStatus);
-
   if (checkVehicleStatus.rowCount === 0) {
     throw new errorHandler(404, "No vehicle found.");
   }
@@ -116,7 +114,6 @@ const getBookingsByRole = async (userId: string, role: string) => {
 
       `,
     );
-    console.log(result);
     return result.rows;
   }
   if (role === "customer") {
@@ -142,6 +139,34 @@ const getBookingsByRole = async (userId: string, role: string) => {
     );
     return result.rows;
   }
+};
+
+const autoReturnedBookings = async () => {
+  const today = new Date();
+  const expiredBookings = await pool.query(
+    `
+    SELECT id,vehicle_id FROM Bookings WHERE status=$1 AND rent_end_date<$2
+    `,
+    ["active", today],
+  );
+  if (expiredBookings.rowCount === 0) return;
+
+  const bookingIds = expiredBookings.rows.map((bId) => bId.id);
+  const vehicleIds = expiredBookings.rows.map((bId) => bId.vehicle_id);
+
+  await pool.query(
+    `
+    UPDATE Bookings SET status=$1 WHERE id=ANY($2::int[])
+    `,
+    ["returned", bookingIds],
+  );
+
+  await pool.query(
+    `
+    UPDATE Vehicles SET availability_status =$1 WHERE id=ANY($2::int[])
+    `,
+    ["available", vehicleIds],
+  );
 };
 
 const updateBooking = async (
@@ -185,9 +210,6 @@ const updateBooking = async (
       `,
       ["available", vehicle_id],
     );
-
-    console.log(updateBookingStatus.rows[0]);
-    console.log(updateVehicleAvailability.rows[0]);
 
     return {
       ...updateBookingStatus.rows[0],
@@ -234,7 +256,13 @@ const updateBooking = async (
       [reqStatus, bookingId],
     );
 
-    console.log(result);
+    const updateVehicleAvailability = await pool.query(
+      `
+      UPDATE Vehicles SET availability_status=$1 WHERE id=$2 RETURNING availability_status
+      
+      `,
+      ["available", vehicle_id],
+    );
 
     return {
       ...result.rows[0],
@@ -242,6 +270,7 @@ const updateBooking = async (
         .toISOString()
         .split("T")[0],
       rent_end_date: result.rows[0].rent_end_date.toISOString().split("T")[0],
+      vehicle: updateVehicleAvailability.rows[0],
     };
   }
 };
@@ -249,4 +278,5 @@ export const bookingsServices = {
   createBooking,
   getBookingsByRole,
   updateBooking,
+  autoReturnedBookings,
 };

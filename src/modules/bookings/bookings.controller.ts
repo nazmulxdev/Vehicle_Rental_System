@@ -28,7 +28,7 @@ const createBooking = async (req: Request, res: Response) => {
     const timeInOneDay = 1000 * 60 * 60 * 24;
     const total_rented_day =
       (end_date.getTime() - start_date.getTime()) / timeInOneDay + 1;
-    console.log({ total_rented_day });
+
     const result = await bookingsServices.createBooking({
       customer_id,
       vehicle_id,
@@ -82,8 +82,6 @@ const getBookingsByRole = async (req: Request, res: Response) => {
         },
       }));
 
-      console.log(formattedResponse);
-
       return sendResponse(res, {
         statusCode: 200,
         success: true,
@@ -134,6 +132,7 @@ const updateBookingStatus = async (req: Request, res: Response) => {
   const { status } = req.body;
   const { id, role } = req.user as JwtPayload;
   try {
+    await bookingsServices.autoReturnedBookings();
     if (role === "admin") {
       const result = await bookingsServices.updateBooking(
         id,
@@ -142,7 +141,6 @@ const updateBookingStatus = async (req: Request, res: Response) => {
         status,
       );
 
-      console.log(result);
       return sendResponse(res, {
         statusCode: 200,
         success: true,
@@ -159,7 +157,6 @@ const updateBookingStatus = async (req: Request, res: Response) => {
         status,
       );
 
-      console.log(result);
       return sendResponse(res, {
         statusCode: 200,
         success: true,

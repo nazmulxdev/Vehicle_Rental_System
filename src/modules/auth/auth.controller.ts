@@ -31,8 +31,6 @@ const signupUser = async (req: Request, res: Response) => {
       phone,
     });
 
-    console.log(result.rows[0]);
-
     return sendResponse(res, {
       statusCode: 201,
       success: true,
