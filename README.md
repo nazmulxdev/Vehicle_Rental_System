@@ -34,6 +34,8 @@ It allows admins to manage vehicles and users, while customers can book vehicles
 
 ## 📁 Project Structure (Modular Pattern)
 
+```
+
 src/
 ├── app.ts
 ├── server.ts
@@ -56,9 +58,11 @@ src/
 │ ├── sendResponse.ts
 │ └── errorHandler.ts
 
-✔ Feature-based  
-✔ Controller–Service–Route separation  
+✔ Feature-based
+✔ Controller–Service–Route separation
 ✔ Clean & scalable architecture
+
+```
 
 ---
 
@@ -114,13 +118,16 @@ src/
 
 ### Authentication Flow
 
-1. User logs in
-2. JWT token generated
-3. Token sent via header:
+1.  User logs in
+2.  JWT token generated
+3.  Token sent via header:
 
-Authorization: Bearer <token>
+    ```
+        Authorization: Bearer <token>
 
-4. Middleware validates token & role
+    ```
+
+4.  Middleware validates token & role
 
 ---
 
@@ -158,10 +165,6 @@ Authorization: Bearer <token>
 | POST   | /api/v1/bookings            | Admin / Customer |
 | GET    | /api/v1/bookings            | Role-based       |
 | PUT    | /api/v1/bookings/:bookingId | Role-based       |
-
----
-
-- Corresponding vehicle is set to **available**
 
 ---
 
