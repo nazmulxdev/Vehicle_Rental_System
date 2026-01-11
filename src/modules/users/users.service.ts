@@ -96,7 +96,7 @@ const updateUser = async (userId: string | undefined, payload: IUser) => {
     `
         UPDATE users SET ${queryKeys} WHERE id=$${
       updateDetailsValues.length + 1
-    } RETURNING *
+    } RETURNING id,name,email,phone,role
         `,
     [...updateDetailsValues, userId],
   );

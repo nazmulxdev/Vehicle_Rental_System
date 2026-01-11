@@ -142,31 +142,33 @@ const getBookingsByRole = async (userId: string, role: string) => {
 };
 
 const autoReturnedBookings = async () => {
-  const today = new Date();
+  const today = new Date().toISOString().split("T")[0];
+
   const expiredBookings = await pool.query(
     `
-    SELECT id,vehicle_id FROM bookings WHERE status=$1 AND rent_end_date<$2
+    SELECT id, vehicle_id
+    FROM bookings
+    WHERE status=$1
+    AND rent_end_date < $2
     `,
     ["active", today],
   );
+
+  console.log("expiredBookings", expiredBookings);
+
   if (expiredBookings.rowCount === 0) return;
 
-  const bookingIds = expiredBookings.rows.map((bId) => bId.id);
-  const vehicleIds = expiredBookings.rows.map((bId) => bId.vehicle_id);
+  for (const booking of expiredBookings.rows) {
+    await pool.query(`UPDATE bookings SET status=$1 WHERE id=$2`, [
+      "returned",
+      booking.id,
+    ]);
 
-  await pool.query(
-    `
-    UPDATE bookings SET status=$1 WHERE id=ANY($2::int[])
-    `,
-    ["returned", bookingIds],
-  );
-
-  await pool.query(
-    `
-    UPDATE vehicles SET availability_status =$1 WHERE id=ANY($2::int[])
-    `,
-    ["available", vehicleIds],
-  );
+    await pool.query(`UPDATE vehicles SET availability_status=$1 WHERE id=$2`, [
+      "available",
+      booking.vehicle_id,
+    ]);
+  }
 };
 
 const updateBooking = async (
@@ -274,6 +276,7 @@ const updateBooking = async (
     };
   }
 };
+
 export const bookingsServices = {
   createBooking,
   getBookingsByRole,
